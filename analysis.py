@@ -112,9 +112,34 @@ def plot_max_std_bins_in_blocks(histograms, temps, concs, std_hist, block_size=4
 
 
 
+def plot_temp_vs_peak_conc_histogram(histograms, temps, concs):
+    peak_concs = []
+
+    # Iterate through each bin position (assuming histograms is a 3D array: [temp, phi, psi])
+    for i in range(histograms.shape[1]):  # phi dimension
+        for j in range(histograms.shape[2]):  # psi dimension
+            for temp_index, temp in enumerate(temps):
+                # Extract histogram data for this temperature and bin position
+                temp_data = histograms[temp_index, i, j]
+
+                # Find the concentration index corresponding to the peak value for this bin position
+                peak_conc_index = np.argmax(temp_data)
+                if peak_conc_index < len(concs):
+                    peak_concs.append(concs[peak_conc_index])
+
+    # Plotting the histogram
+    plt.figure()
+    plt.hist(peak_concs, bins=len(concs), color='blue', alpha=0.7)
+    plt.xlabel('Peak Concentration')
+    plt.ylabel('Frequency')
+    plt.title('Histogram of Peak Concentrations Across Temperatures')
+    plt.show()
+
+
+
 directory = 'hist'
 mean_hist, std_hist, temps, concs, histograms = load_histograms_and_calculate_stats(directory)
-
+#plot_temp_vs_peak_conc_histogram(histograms, temps, concs)
 
 plot_histogram(mean_hist, 'Mean Histogram')
 plot_histogram(std_hist, 'Standard Deviation Histogram')

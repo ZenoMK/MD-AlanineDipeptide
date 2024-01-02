@@ -2,6 +2,9 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
+import GPy
+from sklearn.preprocessing import StandardScaler
+from IPython.display import display
 
 # Function to load histograms and calculate mean and std
 def load_histograms_and_calculate_stats(directory):
@@ -136,14 +139,64 @@ def plot_temp_vs_peak_conc_histogram(histograms, temps, concs):
     plt.show()
 
 
+def prepare_gp_data(histograms, temps, concs, angle_pair):
+    bin_x, bin_y = angle_pair  # Specified angle pair
+
+    # Extracting the values from the specified bin for all temp and conc combinations
+    bin_values = histograms[:, bin_x, bin_y]
+
+    # Preparing input data points (X) and target values (Y)
+    X = np.array([[temp, conc] for temp, conc in zip(temps, concs)])
+    Y = np.array(bin_values).reshape(-1, 1)  # Reshape Y to be a column vector
+
+    return X, Y
+
 
 directory = 'hist'
 mean_hist, std_hist, temps, concs, histograms = load_histograms_and_calculate_stats(directory)
-#plot_temp_vs_peak_conc_histogram(histograms, temps, concs)
 
 plot_histogram(mean_hist, 'Mean Histogram')
 plot_histogram(std_hist, 'Standard Deviation Histogram')
-
 plot_max_std_bins_in_blocks(histograms, temps, concs, std_hist)
 
+#84 224 84 248
+X, Y = prepare_gp_data(histograms, temps, concs, (84, 224))
 
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+# define kernel
+ker = GPy.kern.RBF(input_dim=2, variance=1., lengthscale=1.)
+
+# create simple GP model
+m = GPy.models.GPRegression(X,Y,ker)
+
+# optimize and plot
+m.optimize(messages=True)
+mean, std = m.predict(X)
+# Scatter plot the training data in 3D
+fig = plt.figure(figsize=(10, 8))
+ax = fig.add_subplot(111, projection='3d')
+ax.scatter(X[:, 0], X[:, 1], Y, c='r', marker='o', label='Training Data')
+
+# Generate a grid for predictions
+temp_min, temp_max = np.min(X[:, 0]), np.max(X[:, 0])
+conc_min, conc_max = np.min(X[:, 1]), np.max(X[:, 1])
+temp_grid = np.linspace(temp_min, temp_max, 100)
+conc_grid = np.linspace(conc_min, conc_max, 100)
+temp_mesh, conc_mesh = np.meshgrid(temp_grid, conc_grid)
+grid_X = np.vstack([temp_mesh.ravel(), conc_mesh.ravel()]).T
+
+# Make predictions on the grid
+mean, _ = m.predict(grid_X)
+mean = mean.reshape(temp_mesh.shape)
+
+# Plot the mean predictions as a 3D surface
+ax.plot_surface(temp_mesh, conc_mesh, mean, cmap='viridis', alpha=0.7)
+
+ax.set_xlabel('Temperature')
+ax.set_ylabel('Concentration')
+ax.set_zlabel('GP Prediction')
+ax.set_title('Gaussian Process Mean Prediction (3D)')
+
+plt.legend()
+plt.show()

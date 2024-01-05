@@ -1,3 +1,9 @@
+# L48 Run GP
+
+Go to GP/main directory and run main.py from there. You can give it two parameters, kernel_author and kernel_number. 
+
+You can change the code to include your kernels under the match statement with your name, such that we can all work together to run experiments and see what the others have already tried. 
+
 # MD Simulations of the Alanine Dipeptide
 Molecular dynamics simulation and analysis of conformational states and energy landscape of the alanine dipeptide.
 

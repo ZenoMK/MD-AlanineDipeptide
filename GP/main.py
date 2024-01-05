@@ -1,5 +1,5 @@
 import argparse
-from GP.utils import *
+from utils import *
 import GPy
 
 
@@ -9,7 +9,7 @@ def main(kernel_author=None, kernel_number=None):
     kernel_number: add numbered kernels under your name as you experiment w different kernels
     """
 
-    hist_data_dir = f"{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/data_processed"
+    hist_data_dir = f"{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/data_processing/data_processed"
     # prepare training data
     mean_hist, std_hist, temps, concs, histograms = load_histograms_and_calculate_stats(hist_data_dir)
 
@@ -49,7 +49,7 @@ def main(kernel_author=None, kernel_number=None):
 
 
 if __name__ == '__main__':
-    
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-kernel_author', type=str)
     parser.add_argument('-kernel_number', type=int)

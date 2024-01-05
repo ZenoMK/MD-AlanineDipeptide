@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 import GPy
 
+COMPRESS_SIZE = 18  # number of bins, i.e. 18 because we want roughly ranges of 10 integer values for angles
 
 # Function to load histograms and calculate mean and std
 def load_histograms_and_calculate_stats(directory):
@@ -32,34 +33,9 @@ def load_histograms_and_calculate_stats(directory):
 
     return mean_histogram, std_histogram, temps, concs, histograms
 
-# Function to load histograms and calculate mean and std
-def load_histograms_and_calculate_stats_test(directory):
-    histograms = []
-    temps = []
-    concs = []
-
-    for filename in os.listdir(directory):
-        if filename.endswith('.npy'):
-            parts = filename.split('_')
-            temp = int(parts[1][4:])
-            conc = int(parts[2][4:-4])/10
-            data = np.load(os.path.join(directory, filename), allow_pickle=True).item()
-            histograms.append(data['histogram'])
-            temps.append(temp)
-            concs.append(conc)
-
-    histograms = np.array(histograms)
-    temps = np.array(temps)
-    concs = np.array(concs)
-
-    mean_histogram = np.mean(histograms, axis=0)
-    std_histogram = np.std(histograms, axis=0)
-
-    return mean_histogram, std_histogram, temps, concs, histograms
-
 
 # Function to compress the histogram
-def compress_histogram(histogram, new_size=(18, 18)):
+def compress_histogram(histogram, new_size=(COMPRESS_SIZE, COMPRESS_SIZE)):
     old_size = histogram.shape
     compression_factor = (old_size[0] // new_size[0], old_size[1] // new_size[1])
     compressed_hist = np.zeros(new_size)
@@ -79,8 +55,8 @@ def prepare_4d_gp_data(histograms, temps, concs):
     Y = []
 
     for idx, (temp, conc) in enumerate(zip(temps, concs)):
-        for i in range(18):
-            for j in range(18):
+        for i in range(COMPRESS_SIZE):
+            for j in range(COMPRESS_SIZE):
                 X.append([temp, conc, i, j])
                 Y.append(compressed_histograms[idx, i, j])
 
@@ -88,9 +64,9 @@ def prepare_4d_gp_data(histograms, temps, concs):
 
 
 def plot_predicted_landscape_for_temp_conc(m, scaler, temp, conc):
-    predicted_landscape = np.zeros((18, 18))
-    for i in range(18):
-        for j in range(18):
+    predicted_landscape = np.zeros((COMPRESS_SIZE, COMPRESS_SIZE))
+    for i in range(COMPRESS_SIZE):
+        for j in range(COMPRESS_SIZE):
             # Prepare input for prediction
             input_data = np.array([[temp, conc, i, j]])
             input_data_scaled = scaler.transform(input_data)
@@ -108,7 +84,8 @@ def plot_predicted_landscape_for_temp_conc(m, scaler, temp, conc):
     plt.title(f'Predicted Landscape for Temperature {temp} and Concentration {conc}')
     plt.show()
 
-def find_and_plot_compressed_histogram(temps, concs, histograms, temp_val, conc_val, new_size=(18, 18)):
+
+def find_and_plot_compressed_histogram(temps, concs, histograms, temp_val, conc_val, new_size=(COMPRESS_SIZE, COMPRESS_SIZE)):
     # Find the index of the histogram with the specified temperature and concentration
     try:
         idx = next(i for i, (t, c) in enumerate(zip(temps, concs)) if t == temp_val and c == conc_val)
@@ -130,36 +107,8 @@ def find_and_plot_compressed_histogram(temps, concs, histograms, temp_val, conc_
 
 
 
-# Load histograms and calculate stats
-directory = 'hist'
-mean_hist, std_hist, temps, concs, histograms = load_histograms_and_calculate_stats(directory)
-
-X, Y = prepare_4d_gp_data(histograms, temps, concs)
-#X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.10, random_state=42)
-X_train = X
-Y_train = Y
-
-directory = 'hist/test'
-mean_hist, std_hist, temps, concs, histograms = load_histograms_and_calculate_stats_test(directory)
-X_test, Y_test = prepare_4d_gp_data(histograms, temps, concs)
-
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
-
-# Define 4D kernel for GP
-ker = GPy.kern.Matern32(input_dim=4, variance=1., lengthscale=1.) + GPy.kern.White(input_dim=4, variance=1.)
-
-# Create and optimize GP model
-m = GPy.models.GPRegression(X_train_scaled, Y_train, ker)
-m.optimize(messages=True)
-
-# Predict on the test set and calculate MSE
-Y_pred, _ = m.predict(X_test_scaled)
-mse = mean_squared_error(Y_test, Y_pred)
-print(f"Mean Squared Error: {mse}")
-
-
+"""
+TODO: what do we need plot_predicted_landscape_for_temp_conc and find_and_plot_compressed_histogram for? refactor, etc
 temps = [310, 320, 330, 330]
 concs = [17.5, 12.5, 7.5, 22.5]
 #concs = [7.5, 12.5, 17.5, 22.5]
@@ -170,19 +119,5 @@ specific_conc = 17.5   # Example concentration
 plot_predicted_landscape_for_temp_conc(m, scaler, specific_temp, specific_conc)
 find_and_plot_compressed_histogram(temps, concs, histograms, specific_temp, specific_conc)
 
-specific_temp = 320  # Example temperature
-specific_conc = 12.5   # Example concentration
-
-plot_predicted_landscape_for_temp_conc(m, scaler, specific_temp, specific_conc)
-find_and_plot_compressed_histogram(temps, concs, histograms, specific_temp, specific_conc)
-
-specific_temp = 330  # Example temperature
-specific_conc = 7.5   # Example concentration
-plot_predicted_landscape_for_temp_conc(m, scaler, specific_temp, specific_conc)
-find_and_plot_compressed_histogram(temps, concs, histograms, specific_temp, specific_conc)
-
-specific_temp = 330  # Example temperature
-specific_conc = 22.5   # Example concentration
-plot_predicted_landscape_for_temp_conc(m, scaler, specific_temp, specific_conc)
-find_and_plot_compressed_histogram(temps, concs, histograms, specific_temp, specific_conc)
+"""
 

@@ -1,6 +1,12 @@
 import argparse
 from utils import *
 import GPy
+import numpy as np
+import os
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
 
 
 def main(kernel_author=None, kernel_number=None):
@@ -29,30 +35,36 @@ def main(kernel_author=None, kernel_number=None):
     """
     match kernel_author:
         # example of 1 kernel for Vlad (+ a default case)
-        case "vlad":
+        case "vladimir":
             match kernel_number:
                 case 1: kernel = GPy.kern.Matern32(input_dim=4, variance=1., lengthscale=1.) + GPy.kern.White(input_dim=4, variance=1.)
                 case _: kernel = GPy.kern.Matern32(input_dim=4, variance=1., lengthscale=1.) + GPy.kern.White(input_dim=4, variance=1.)
+        case "zeno":
+            match kernel_number:
+                case 1: kernel = GPy.kern.RBF(input_dim=4, variance=1., lengthscale=1.)
+
         case _ :
             kernel = GPy.kern.Matern32(input_dim=4, variance=1., lengthscale=1.) + GPy.kern.White(input_dim=4, variance=1.)
 
 
     # Create and optimize GP model
     m = GPy.models.GPRegression(X_train_scaled, Y_train, kernel)
-    m.optimize(messages=True)
+    m.optimize(messages=True, max_iters=1)
+    np.save(f'../output/models/{kernel_author}_{kernel_number}_model_save.npy', m.param_array)
 
     # Predict on the test set and calculate MSE
     Y_pred, _ = m.predict(X_test_scaled)
     mse = mean_squared_error(Y_test, Y_pred)
-
+    np.save(f'../output/predictions/{kernel_author}_{kernel_number}_model_save.npy', Y_pred)
+    print(f"MSE: {mse}")
     return m, mse
 
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-kernel_author', type=str)
-    parser.add_argument('-kernel_number', type=int)
+    parser.add_argument('--kernel_author', type=str)
+    parser.add_argument('--kernel_number', type=int)
     args = parser.parse_args()
 
     main(kernel_author=args.kernel_author, kernel_number=args.kernel_number)

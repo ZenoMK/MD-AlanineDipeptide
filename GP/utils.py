@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 import GPy
 
-COMPRESS_SIZE = 36  # number of bins, i.e. 18 because we want roughly ranges of 10 integer values for angles
+COMPRESS_SIZE = 20  # number of bins, i.e. 36 because we want roughly ranges of 10 integer values for angles
 
 # Function to load histograms and calculate mean and std
 def load_histograms_and_calculate_stats(directory):
@@ -120,4 +120,17 @@ plot_predicted_landscape_for_temp_conc(m, scaler, specific_temp, specific_conc)
 find_and_plot_compressed_histogram(temps, concs, histograms, specific_temp, specific_conc)
 
 """
+
+
+def mae(ground_truth_angles, predicted_angles):
+    N_res = len(predicted_angles)
+    errors = []
+
+    for i in range(N_res):
+        # Calculate the absolute difference in angles, accounting for angle wrap-around at 360 degrees
+        error = min(abs(predicted_angles[i] - ground_truth_angles[i]), 360 - abs(predicted_angles[i] - ground_truth_angles[i]))
+        errors.append(error)
+
+    mae = sum(errors) / N_res
+    return mae
 

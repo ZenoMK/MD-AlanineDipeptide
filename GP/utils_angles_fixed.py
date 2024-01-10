@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 import GPy
 
-COMPRESS_SIZE = 20  # number of bins, i.e. 36 because we want roughly ranges of 10 integer values for angles
+COMPRESS_SIZE = 36  # number of bins, i.e. 18 because we want roughly ranges of 10 integer values for angles
 
 # Function to load histograms and calculate mean and std
 def load_histograms_and_calculate_stats(directory):
@@ -20,7 +20,7 @@ def load_histograms_and_calculate_stats(directory):
             temp = int(parts[1][4:])
             conc = int(parts[2][5:-4])
             data = np.load(os.path.join(directory, filename), allow_pickle=True).item()
-            histograms.append(data['histogram'])
+            histograms.append(data['histogram'].T)
             temps.append(temp)
             concs.append(conc)
 
@@ -46,31 +46,38 @@ def compress_histogram(histogram, new_size=(COMPRESS_SIZE, COMPRESS_SIZE)):
             y_start, y_end = j * compression_factor[1], (j + 1) * compression_factor[1]
             compressed_hist[i, j] = np.mean(histogram[x_start:x_end, y_start:y_end])
 
-    return compressed_hist.T
+    return compressed_hist
 
 
-def prepare_4d_gp_data(histograms, temps, concs):
+def prepare_4d_gp_data(histograms, temps, concs, COMPRESS_SIZE):
+    step = 360 / COMPRESS_SIZE
     compressed_histograms = np.array([compress_histogram(hist) for hist in histograms])
     X = []
     Y = []
-    angles = np.arange(-120, 241, 1)
+    phi = np.arange(239, -121, -step)
+    psi = np.arange(-270,91,-step)
     for idx, (temp, conc) in enumerate(zip(temps, concs)):
         for i in range(10):
             for j in range(10):
-                X.append([temp, conc, angles[i], angles[j]])
+                X.append([temp, conc, psi[i], phi[j]])
                 Y.append(compressed_histograms[idx, i, j])
 
     return np.array(X), np.array(Y).reshape(-1, 1)
 
 
-
 def plot_predicted_landscape_for_temp_conc(m, scaler, temp, conc):
+    step = 360 / COMPRESS_SIZE
     predicted_landscape = np.zeros((COMPRESS_SIZE, COMPRESS_SIZE))
+    phi = np.arange(239, -121, -step)
+    psi = np.arange(-270, 91, -step)
     for i in range(COMPRESS_SIZE):
         for j in range(COMPRESS_SIZE):
             # Prepare input for prediction
-            input_data = np.array([[temp, conc, i, j]])
+            input_data = np.array([temp, conc, psi[i], phi[j]])
+
             input_data_scaled = scaler.transform(input_data)
+            input_dat_scaled[:, 0:2] = scaler.fit_transform(input_dat[:, 0:2])
+            input_dat_scaled[:, 2:] = input_dat[:, 2:]
 
             # Predict and store the value
             predicted_value, _ = m.predict(input_data_scaled)
@@ -121,17 +128,4 @@ plot_predicted_landscape_for_temp_conc(m, scaler, specific_temp, specific_conc)
 find_and_plot_compressed_histogram(temps, concs, histograms, specific_temp, specific_conc)
 
 """
-
-
-def mae(ground_truth_angles, predicted_angles):
-    N_res = len(predicted_angles)
-    errors = []
-
-    for i in range(N_res):
-        # Calculate the absolute difference in angles, accounting for angle wrap-around at 360 degrees
-        error = min(abs(predicted_angles[i] - ground_truth_angles[i]), 360 - abs(predicted_angles[i] - ground_truth_angles[i]))
-        errors.append(error)
-
-    mae = sum(errors) / N_res
-    return mae
 

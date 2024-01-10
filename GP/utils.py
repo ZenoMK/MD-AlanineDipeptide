@@ -46,21 +46,22 @@ def compress_histogram(histogram, new_size=(COMPRESS_SIZE, COMPRESS_SIZE)):
             y_start, y_end = j * compression_factor[1], (j + 1) * compression_factor[1]
             compressed_hist[i, j] = np.mean(histogram[x_start:x_end, y_start:y_end])
 
-    return compressed_hist
+    return compressed_hist.T
 
 
 def prepare_4d_gp_data(histograms, temps, concs):
     compressed_histograms = np.array([compress_histogram(hist) for hist in histograms])
     X = []
     Y = []
-
+    angles = np.arange(-120, 241, 1)
     for idx, (temp, conc) in enumerate(zip(temps, concs)):
-        for i in range(COMPRESS_SIZE):
-            for j in range(COMPRESS_SIZE):
-                X.append([temp, conc, i, j])
+        for i in range(10):
+            for j in range(10):
+                X.append([temp, conc, angles[i], angles[j]])
                 Y.append(compressed_histograms[idx, i, j])
 
     return np.array(X), np.array(Y).reshape(-1, 1)
+
 
 
 def plot_predicted_landscape_for_temp_conc(m, scaler, temp, conc):
@@ -77,7 +78,7 @@ def plot_predicted_landscape_for_temp_conc(m, scaler, temp, conc):
 
     # Plotting the predicted landscape as a 2D histogram
     plt.figure(figsize=(8, 6))
-    plt.imshow(predicted_landscape, cmap='viridis', origin='lower')
+    plt.imshow(predicted_landscape.T, cmap='viridis', origin='lower')
     plt.colorbar(label='Predicted Value')
     plt.xlabel('Bin X')
     plt.ylabel('Bin Y')

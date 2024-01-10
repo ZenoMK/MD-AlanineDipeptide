@@ -41,7 +41,7 @@ def main(kernel_author="vladimir", kernel_number=None):
                 case _: kernel = GPy.kern.White(input_dim=4, variance=1.)
         case "zeno":
             match kernel_number:
-                case 1: kernel = GPy.kern.RBF(input_dim=4, variance=1., lengthscale=1.)
+                case 1 : kernel = GPy.kern.RBF(input_dim=4, variance=1., lengthscale=1.) + GPy.kern.Matern32(input_dim=4, variance=1., lengthscale=1.)
 
         case _ :
             kernel = GPy.kern.Matern32(input_dim=4, variance=1., lengthscale=1.) + GPy.kern.White(input_dim=4, variance=1.)

@@ -67,4 +67,4 @@ def main(kernel_author=None, kernel_number=None):
     print(f"MSE: {mse}")
     return m, mse
 
-main(kernel_author = "zeno", kernel_number = 1)
+main(kernel_author = "zeno", kernel_number = 3)

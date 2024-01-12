@@ -49,7 +49,8 @@ def main(kernel_author="vladimir", kernel_number=None):
 
     # Create and optimize GP model
     m = GPy.models.GPRegression(X_train_scaled, Y_train, kernel)
-    m.optimize(messages=True)
+    m.optimize(messages=True, max_iters = 1)
+    #m.pickle(f'../output/models/{kernel_author}_{kernel_number}_model_save')
     np.save(f'../output/models/{kernel_author}_{kernel_number}_model_save.npy', m.param_array)
 
     # Predict on the test set and calculate MSE

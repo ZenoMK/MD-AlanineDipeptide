@@ -32,7 +32,7 @@ def main(kernel_author=None, kernel_number=None):
     # scale train data
     X_train_scaled = ct.fit_transform(X_train)
     # scale test data
-    X_test_scaled = ct.fit_transform(X_train)
+    X_test_scaled = ct.fit_transform(X_test)
 
 
     # Define 4D kernel for GP
@@ -53,7 +53,7 @@ def main(kernel_author=None, kernel_number=None):
         case _ :
             kernel = GPy.kern.Matern32(input_dim=4, variance=1., lengthscale=1.) + GPy.kern.White(input_dim=4, variance=1.)
 
-
+    print(kernel_author)
     # Create and optimize GP model
     m = GPy.models.GPRegression(X_train_scaled, Y_train, kernel)
     m.optimize(messages=True, max_iters=1)

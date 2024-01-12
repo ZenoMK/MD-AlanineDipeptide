@@ -21,7 +21,7 @@ def main(kernel_author="vlad", kernel_number=None):
     mean_hist, std_hist, temps, concs, histograms = load_histograms_and_calculate_stats(hist_data_dir)
 
     X, Y = prepare_4d_gp_data(histograms, temps, concs)
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.90, random_state=42)
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.10, random_state=42)
 
     scaler = StandardScaler()
     # scale train data
@@ -50,7 +50,7 @@ def main(kernel_author="vlad", kernel_number=None):
 
     # Create and optimize GP model
     m = GPy.models.GPRegression(X_train_scaled, Y_train, kernel)
-    m.optimize(messages=True, max_iters = 1)
+    m.optimize(messages=True)
     #m.pickle(f'../output/models/{kernel_author}_{kernel_number}_model_save')
     np.save(f'../output/models/{kernel_author}_{kernel_number}_model_save.npy', m.param_array)
 

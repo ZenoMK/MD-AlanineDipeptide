@@ -48,7 +48,7 @@ def main(kernel_author=None, kernel_number=None):
         case "zeno":
             match kernel_number:
                 # this will be on GPy without extras
-                case 1 : kernel = GPy.kern.RBF(input_dim=1, variance=1., lengthscale=1.)
+                case 1 : kernel = GPy.kern.RBF(input_dim=4, variance=1., lengthscale=1.)
 
         case _ :
             kernel = GPy.kern.Matern32(input_dim=4, variance=1., lengthscale=1.) + GPy.kern.White(input_dim=4, variance=1.)

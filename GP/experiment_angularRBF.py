@@ -56,7 +56,7 @@ def main(kernel_author=None, kernel_number=None):
     print(kernel_author)
     # Create and optimize GP model
     m = GPy.models.GPRegression(X_train_scaled, Y_train, kernel)
-    m.optimize(messages=True, max_iters=1)
+    m.optimize(messages=True)
     #m.pickle(f'../output/models/{kernel_author}_{kernel_number}_model_save')
     np.save(f'../output/models/{kernel_author}_{kernel_number}_model_save.npy', m.param_array)
 

@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn.compose import ColumnTransformer
 
-def main(kernel_author="vladimir", kernel_number=None):
+def main(kernel_author=None, kernel_number=None):
     """
     kernel_author: add your name in match statement below
     kernel_number: add numbered kernels under your name as you experiment w different kernels
@@ -56,7 +56,7 @@ def main(kernel_author="vladimir", kernel_number=None):
 
     # Create and optimize GP model
     m = GPy.models.GPRegression(X_train_scaled, Y_train, kernel)
-    m.optimize(messages=True)
+    m.optimize(messages=True, max_iters=1)
     #m.pickle(f'../output/models/{kernel_author}_{kernel_number}_model_save')
     np.save(f'../output/models/{kernel_author}_{kernel_number}_model_save.npy', m.param_array)
 
@@ -67,12 +67,4 @@ def main(kernel_author="vladimir", kernel_number=None):
     print(f"MSE: {mse}")
     return m, mse
 
-
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--kernel_author', type=str)
-    parser.add_argument('--kernel_number', type=int)
-    args = parser.parse_args()
-
-    main(kernel_author=args.kernel_author, kernel_number=args.kernel_number)
+main(kernel_author = "zeno", kernel_number = 1)

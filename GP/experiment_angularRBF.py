@@ -7,12 +7,11 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
+from sklearn.compose import ColumnTransformer
 
-
-
-def main(kernel_author="vlad", kernel_number=None):
+def main(kernel_author="vladimir", kernel_number=None):
     """
-    kernel_author: add your name in match statement below 
+    kernel_author: add your name in match statement below
     kernel_number: add numbered kernels under your name as you experiment w different kernels
     """
 
@@ -21,13 +20,19 @@ def main(kernel_author="vlad", kernel_number=None):
     mean_hist, std_hist, temps, concs, histograms = load_histograms_and_calculate_stats(hist_data_dir)
 
     X, Y = prepare_4d_gp_data(histograms, temps, concs)
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.90, random_state=42)
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.10, random_state=42)
 
-    scaler = StandardScaler()
+
+    # only apply scaling to some columns, see: https://stackoverflow.com/questions/38420847/apply-standardscaler-to-parts-of-a-data-set
+    ct = ColumnTransformer([
+        ('somename', StandardScaler(), [0,1])
+    ], remainder='passthrough')
+
+    ct.fit_transform(X_train)
     # scale train data
-    X_train_scaled = scaler.fit_transform(X_train)
+    X_train_scaled = ct.fit_transform(X_train)
     # scale test data
-    X_test_scaled = scaler.transform(X_test)
+    X_test_scaled = ct.fit_transform(X_train)
 
 
     # Define 4D kernel for GP
@@ -42,7 +47,8 @@ def main(kernel_author="vlad", kernel_number=None):
                 case _: kernel = GPy.kern.White(input_dim=4, variance=1.)
         case "zeno":
             match kernel_number:
-                case 1 : kernel = GPy.kern.RBF(input_dim=4, variance=1., lengthscale=1., active_dims=None) #+ GPy.kern.Matern32(input_dim=4, variance=1., lengthscale=1.)
+                # this will be on GPy without extras
+                case 1 : kernel = GPy.kern.RBF(input_dim=1, variance=1., lengthscale=1.)
 
         case _ :
             kernel = GPy.kern.Matern32(input_dim=4, variance=1., lengthscale=1.) + GPy.kern.White(input_dim=4, variance=1.)
@@ -50,7 +56,7 @@ def main(kernel_author="vlad", kernel_number=None):
 
     # Create and optimize GP model
     m = GPy.models.GPRegression(X_train_scaled, Y_train, kernel)
-    m.optimize(messages=True, max_iters = 1)
+    m.optimize(messages=True)
     #m.pickle(f'../output/models/{kernel_author}_{kernel_number}_model_save')
     np.save(f'../output/models/{kernel_author}_{kernel_number}_model_save.npy', m.param_array)
 

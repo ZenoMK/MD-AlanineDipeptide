@@ -50,7 +50,7 @@ def main(kernel_author=None, kernel_number=None):
                 case 3 : kernel = GPy.kern.RBF(input_dim=4, variance=1., lengthscale=1.)
 
                 # the one without data leakage
-                case 3 : kernel = GPy.kern.RBF(input_dim=4, variance=1., lengthscale=1.)
+                case 4 : kernel = GPy.kern.RBF(input_dim=4, variance=1., lengthscale=1.)
 
         case _ :
             kernel = GPy.kern.Matern32(input_dim=4, variance=1., lengthscale=1.) + GPy.kern.White(input_dim=4, variance=1.)
@@ -69,4 +69,4 @@ def main(kernel_author=None, kernel_number=None):
     print(f"MSE: {mse}")
     return m, mse
 
-main(kernel_author = "zeno", kernel_number = 3)
+main(kernel_author = "zeno", kernel_number = 4)

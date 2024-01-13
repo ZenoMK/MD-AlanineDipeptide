@@ -23,7 +23,10 @@ def expdesign(model):
         a new point to sample
     """
     params = ParameterSpace([ContinuousParameter('Temp', 280 , 370),
-                    ContinuousParameter('Conc', 0.05, 0.25)])
+                    ContinuousParameter('Conc', 0.05, 0.25),
+                    ContinuousParameter('phi', -180, 180),
+                    ContinuousParameter('Conc', -180, 180)
+                             ])
 
     model_emukit = GPyModelWrapper(model)
     model_variance = ModelVariance(model=model_emukit)

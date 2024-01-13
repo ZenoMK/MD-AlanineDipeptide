@@ -52,6 +52,9 @@ def main(kernel_author=None, kernel_number=None):
                 # the one without data leakage
                 case 4 : kernel = GPy.kern.RBF(input_dim=4, variance=1., lengthscale=1.)
 
+                # the one with ang distance
+                case 5 : kernel = GPy.kern.RBF(input_dim=4, variance=1., lengthscale=1.)
+
         case _ :
             kernel = GPy.kern.Matern32(input_dim=4, variance=1., lengthscale=1.) + GPy.kern.White(input_dim=4, variance=1.)
 
@@ -69,4 +72,4 @@ def main(kernel_author=None, kernel_number=None):
     print(f"MSE: {mse}")
     return m, mse
 
-main(kernel_author = "zeno", kernel_number = 4)
+main(kernel_author = "zeno", kernel_number = 5)

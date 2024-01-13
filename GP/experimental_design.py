@@ -12,6 +12,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from utils_angles_fixed import *
+import logging
+logging.basicConfig(level=logging.DEBUG)
 from main import *
 
 def expdesign(model):
@@ -25,7 +27,7 @@ def expdesign(model):
     params = ParameterSpace([ContinuousParameter('Temp', 280 , 370),
                     ContinuousParameter('Conc', 0.05, 0.25),
                     ContinuousParameter('phi', -180, 180),
-                    ContinuousParameter('Conc', -180, 180)
+                    ContinuousParameter('psi', -180, 180)
                              ])
 
     model_emukit = GPyModelWrapper(model)
@@ -38,6 +40,7 @@ def expdesign(model):
                                             acquisition=model_variance,
                                             batch_size=1)
     expdesign_loop.run_loop(user_function=f, stopping_condition=1)
+
 
 
 

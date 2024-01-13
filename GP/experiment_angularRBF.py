@@ -24,15 +24,19 @@ def main(kernel_author=None, kernel_number=None):
 
 
     # only apply scaling to some columns, see: https://stackoverflow.com/questions/38420847/apply-standardscaler-to-parts-of-a-data-set
-    ct = ColumnTransformer([
+    ct1 = ColumnTransformer([
         ('somename', StandardScaler(), [0,1])
     ], remainder='passthrough')
 
-    ct.fit_transform(X_train)
+    ct2 = ColumnTransformer([
+        ('somename', StandardScaler(), [0, 1])
+    ], remainder='passthrough')
+
+    #ct1.fit_transform(X_train)
     # scale train data
-    X_train_scaled = ct.fit_transform(X_train)
+    X_train_scaled = ct1.fit_transform(X_train)
     # scale test data
-    X_test_scaled = ct.fit_transform(X_test)
+    X_test_scaled = ct2.fit_transform(X_test)
 
 
     # Define 4D kernel for GP

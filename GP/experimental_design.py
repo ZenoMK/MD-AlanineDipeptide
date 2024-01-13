@@ -28,7 +28,6 @@ def expdesign(model):
     model_emukit = GPyModelWrapper(model)
     model_variance = ModelVariance(model=model_emukit)
 
-    f,_ = branin_function()
 
 
     expdesign_loop = ExperimentalDesignLoop(model=model_emukit,
@@ -39,10 +38,7 @@ def expdesign(model):
 
 
 
-def dummy(x):
-    return x
 
 
-
-m,mse = main(kernel_author = "zeno", kernel_number = 1)
+m,mse = main("zeno", 1)
 expdesign(m)

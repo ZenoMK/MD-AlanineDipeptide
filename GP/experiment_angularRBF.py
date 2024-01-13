@@ -24,19 +24,14 @@ def main(kernel_author=None, kernel_number=None):
 
 
     # only apply scaling to some columns, see: https://stackoverflow.com/questions/38420847/apply-standardscaler-to-parts-of-a-data-set
-    ct1 = ColumnTransformer([
+    ct = ColumnTransformer([
         ('somename', StandardScaler(), [0,1])
     ], remainder='passthrough')
 
-    ct2 = ColumnTransformer([
-        ('somename', StandardScaler(), [0, 1])
-    ], remainder='passthrough')
-
-    #ct1.fit_transform(X_train)
     # scale train data
-    X_train_scaled = ct1.fit_transform(X_train)
+    X_train_scaled = ct.fit_transform(X_train)
     # scale test data
-    X_test_scaled = ct2.fit_transform(X_test)
+    X_test_scaled = ct.transform(X_test)
 
 
     # Define 4D kernel for GP
@@ -54,13 +49,16 @@ def main(kernel_author=None, kernel_number=None):
                 # this will be on GPy without extras
                 case 3 : kernel = GPy.kern.RBF(input_dim=4, variance=1., lengthscale=1.)
 
+                # the one without data leakage
+                case 3 : kernel = GPy.kern.RBF(input_dim=4, variance=1., lengthscale=1.)
+
         case _ :
             kernel = GPy.kern.Matern32(input_dim=4, variance=1., lengthscale=1.) + GPy.kern.White(input_dim=4, variance=1.)
 
     print(kernel_author)
     # Create and optimize GP model
     m = GPy.models.GPRegression(X_train_scaled, Y_train, kernel)
-    m.optimize(messages=True)
+    m.optimize(messages=True, max_iters = 1)
     #m.pickle(f'../output/models/{kernel_author}_{kernel_number}_model_save')
     np.save(f'../output/models/{kernel_author}_{kernel_number}_model_save.npy', m.param_array)
 

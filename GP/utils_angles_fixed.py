@@ -54,6 +54,18 @@ def prepare_4d_gp_data(histograms, temps, concs):
 
     return np.array(X), np.array(Y).reshape(-1, 1)
 
+def prepare_2d_gp_data(histograms, temps, concs):
+    compressed_histograms = np.array([compress_histogram(hist) for hist in histograms])
+    X = []
+    Y = []
+    for idx, (temp, conc) in enumerate(zip(temps, concs)):
+        for i in range(COMPRESS_SIZE):
+            for j in range(COMPRESS_SIZE):
+                X.append([temp, conc])
+                Y.append(compressed_histograms[idx, i, j])
+
+    return np.array(X), np.array(Y).reshape(-1, 1)
+
 
 
 def plot_predicted_landscape_for_temp_conc(m, scaler, temp, conc):

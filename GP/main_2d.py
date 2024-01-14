@@ -12,7 +12,7 @@ from sklearn.metrics import mean_squared_error
 
 def main(kernel_author="vlad", kernel_number=None):
     """
-    kernel_author: add your name in match statement below 
+    kernel_author: add your name in match statement below
     kernel_number: add numbered kernels under your name as you experiment w different kernels
     """
 
@@ -20,15 +20,13 @@ def main(kernel_author="vlad", kernel_number=None):
     # prepare training data
     mean_hist, std_hist, temps, concs, histograms = load_histograms_and_calculate_stats(hist_data_dir)
 
-    X, Y = prepare_4d_gp_data(histograms, temps, concs)
-    #X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.10, random_state=42)
-    X_train = X
-    Y_train = Y
+    X, Y = prepare_2d_gp_data(histograms, temps, concs)
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.10, random_state=42)
     scaler = StandardScaler()
     # scale train data
     X_train_scaled = scaler.fit_transform(X_train)
     # scale test data
-    #X_test_scaled = scaler.transform(X_test)
+    X_test_scaled = scaler.transform(X_test)
 
 
     # Define 4D kernel for GP
@@ -44,7 +42,7 @@ def main(kernel_author="vlad", kernel_number=None):
         case "zeno":
             match kernel_number:
                 case 1 : kernel = GPy.kern.RBF(input_dim=4, variance=1., lengthscale=1.)
-                case 6 : kernel = GPy.kern.Matern32(input_dim=4, variance=1., lengthscale=1.)
+                case 42 : kernel = GPy.kern.Matern32(input_dim=2, variance=1., lengthscale=1.)
 
         case _ :
             kernel = GPy.kern.Matern32(input_dim=4, variance=1., lengthscale=1.) #+ GPy.kern.White(input_dim=4, variance=1.)
@@ -52,16 +50,17 @@ def main(kernel_author="vlad", kernel_number=None):
 
     # Create and optimize GP model
     m = GPy.models.GPRegression(X_train_scaled, Y_train, kernel)
-    m.optimize(messages=True)
+    m.optimize(messages=True, max_iters = 1)
     #m.pickle(f'../output/models/{kernel_author}_{kernel_number}_model_save')
     np.save(f'../output/models/{kernel_author}_{kernel_number}_model_save.npy', m.param_array)
 
     # Predict on the test set and calculate MSE
-    #Y_pred, _ = m.predict(X_test_scaled)
-    #mse = mean_squared_error(Y_test, Y_pred)
+    Y_pred, _ = m.predict(X_test_scaled)
+    mse = mean_squared_error(Y_test, Y_pred)
+    print(Y_pred)
     #np.save(f'../output/predictions/{kernel_author}_{kernel_number}_model_save.npy', Y_pred)
     #print(f"MSE: {mse}")
-    return m#, mse
+    return m, mse
 
 
 if __name__ == '__main__':

@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 import GPy
-COMPRESS_SIZE = 18  # number of bins, i.e. 36 because we want roughly ranges of 10 integer values for angles
+COMPRESS_SIZE = 20  # number of bins, i.e. 36 because we want roughly ranges of 10 integer values for angles
 # Function to load histograms and calculate mean and std
 def load_histograms_and_calculate_stats(directory):
     histograms = []

@@ -94,7 +94,19 @@ def main(kernel_author=None, kernel_number=None):
     """\
 
 
-    kernel= GPy.kern.Matern32(input_dim=2, variance=1., lengthscale=1.) + GPy.kern.White(input_dim=2, variance=1.)
+    match kernel_author:
+        # example of 1 kernel for Vlad (+ a default case)
+        case "vlad":
+            match kernel_number:
+                case 1: kernel = GPy.kern.Matern32(input_dim=4, variance=1., lengthscale=1.) + GPy.kern.White(input_dim=4, variance=1.)
+                case _: kernel = GPy.kern.White(input_dim=4, variance=1.)
+        case "zeno":
+            match kernel_number:
+                case 1 : kernel = GPy.kern.RBF(input_dim=4, variance=1., lengthscale=1.)
+                case 42 : kernel = GPy.kern.Matern32(input_dim=2, variance=1., lengthscale=1.)
+
+        case _ :
+            kernel = GPy.kern.Matern32(input_dim=4, variance=1., lengthscale=1.) #+ GPy.kern.White(input_dim=4, variance=1.)
 
 
     # Create and optimize GP model

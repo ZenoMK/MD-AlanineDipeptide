@@ -17,11 +17,11 @@ from sklearn.metrics import mean_squared_error
 from utils_angles_fixed import *
 from emukit.core.initial_designs.latin_design import LatinDesign
 import logging
-logging.basicConfig(level=logging.DEBUG)
 from main import *
 from utils_angles_fixed import *
 
 class ExperimentalDesign():
+    logging.basicConfig(level=logging.NOTSET)
     def __init__(self,dir, max_iters):
         self.dir = dir
         mean_histogram, std_histogram, temps, concs, histograms = load_histograms_and_calculate_stats(self.dir)
@@ -30,37 +30,37 @@ class ExperimentalDesign():
         self.histograms = histograms
         self.max_iters = max_iters
 
-        params = ParameterSpace([DiscreteParameter('Temp', [280,290,300,310,320,330,340,350 370]),
+        params = ParameterSpace([DiscreteParameter('Temp', [280,290,300,310,320,330,340,350, 370]),
                         DiscreteParameter('Conc', [0.05, 0.10,0.15,0.20,0.25])
                                  ])
         design = LatinDesign(params)
         num_data_points = 15
-        X = design.get_samples(num_data_points)
-        Y = self.obtain_histogram_for_X(X)
+        pts = design.get_samples(num_data_points)
+        X,Y = prepare_2d_gp_data(self.histograms, pts[:,0], pts[:,1])
 
-        model = GPRegression(X, Y)
+        Y = self.obtain_histogram_for_X(X)
+        kernel = GPy.kern.Matern32(input_dim=2, variance=1., lengthscale=1.)
+        model = GPy.models.GPRegression(X, Y, kernel=kernel)
         model_emukit = GPyModelWrapper(model)
         model_variance = ModelVariance(model=model_emukit)
 
 
 
-        expdesign_loop = ExperimentalDesignLoop(model=model_emukit,
+        self.expdesign_loop = ExperimentalDesignLoop(model=model_emukit,
                                                 space=params,
                                                 acquisition=model_variance,
                                                 batch_size=1)
-        expdesign_loop.run_loop(user_function=self.obtain_histogram_for_X, stopping_condition=self.max_iters)
+    def run_loop(self):
+        self.expdesign_loop.run_loop(user_function=self.obtain_histogram_for_X, stopping_condition=self.max_iters)
 
 
     def obtain_histogram_for_X(self, X):
         """
         Function to obtain the correct histogram for a suggested point from our database of simulations
         """
-        outputarr = []
-        for x in X:
-            t = x[0]
-            c = x[1]
-            for idx, (temp, conc) in enumerate(zip(self.temps, self.concs)):
-                if t == temp and c == conc:
-                    hist = gaussian_filter(self.histograms[idx], sigma=0.8)
-                    outputarr.append(hist)
-        return outputarr
+        _,Y = prepare_2d_gp_data(self.histograms, X[:,0], X[:,1])
+        return Y
+
+    def get_model(self):
+        #print(self.expdesign_loop.model)
+        return self.expdesign_loop.model

@@ -2,6 +2,10 @@
 from ExperimentalDesign import ExperimentalDesign
 import os
 import numpy as np
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 dir = hist_data_dir = f"{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/data_processing/data_processed"
 obj = ExperimentalDesign(dir, 45)
+m = obj.get_model()

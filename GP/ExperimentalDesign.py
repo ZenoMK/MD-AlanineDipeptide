@@ -64,3 +64,6 @@ class ExperimentalDesign():
     def get_model(self):
         #print(self.expdesign_loop.model)
         return self.expdesign_loop.model
+
+    def get_sampled_X(self):
+        return self.get_model().X()

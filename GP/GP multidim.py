@@ -30,13 +30,6 @@ def plot_predicted_landscape_for_temp_conc(m, scaler, temp, conc):
     plt.imshow(predicted_landscape.T,
                origin='lower')
     # plt.tight_layout()
-    tick_indices = np.linspace(0, COMPRESS_SIZE - 1, COMPRESS_SIZE, dtype=int)
-
-    tick_labels = np.arange(-180, 180, 360 / COMPRESS_SIZE)
-    plt.xticks(tick_indices, tick_labels)
-    plt.yticks(tick_indices, tick_labels)
-
-    # axis labels (right order?)
     plt.xlabel('$\phi$')
     plt.ylabel('$\psi$')
     plt.colorbar()
@@ -47,21 +40,9 @@ def plot_predicted_landscape_for_temp_conc(m, scaler, temp, conc):
     return predicted_value
 
 def plot_compressed_histogram(compressed_hist, temp_val, conc_val):
-
-    # Plotting
-    #plt.figure(figsize=(8, 6))
     plt.figure()
     plt.imshow(compressed_hist.T, origin='lower')
     plt.colorbar()
-    tick_indices = np.linspace(0, COMPRESS_SIZE - 1, COMPRESS_SIZE, dtype=int)
-
-    tick_labels = np.arange(-180, 180, 360 / COMPRESS_SIZE)
-    plt.xticks(tick_indices, tick_labels)
-    plt.yticks(tick_indices, tick_labels)
-
-    # axis labels (right order?)
-    plt.xlabel('$\phi$')
-    plt.ylabel('$\psi$')
     plt.title(f'Compressed Histogram for Temperature {temp_val} and Concentration {conc_val}')
     plt.savefig(f'multid_{temp_val}_{conc_val}_hist.png', dpi=300)
     plt.show()

@@ -54,12 +54,14 @@ def prepare_4d_gp_data(histograms, temps, concs):
 
     return np.array(X), np.array(Y).reshape(-1, 1)
 
+from scipy.ndimage import gaussian_filter
 def prepare_2d_gp_data(histograms, temps, concs):
-    compressed_histograms = np.array([compress_histogram(hist) for hist in histograms])
+    compressed_histograms = np.array([hist for hist in histograms])
     X = []
     Y = []
     for idx, (temp, conc) in enumerate(zip(temps, concs)):
         X.append([temp, conc])
+        compressed_histograms[idx] = gaussian_filter(compressed_histograms[idx], sigma=0.8)
         Y.append(compressed_histograms[idx].reshape(-1))
 
     return np.array(X), np.array(Y)

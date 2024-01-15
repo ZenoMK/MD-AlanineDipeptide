@@ -6,6 +6,7 @@ from emukit.core import ParameterSpace, DiscreteParameter
 from emukit.experimental_design.acquisitions import ModelVariance
 from emukit.experimental_design import ExperimentalDesignLoop
 from emukit.model_wrappers import GPyModelWrapper
+from scipy.ndimage import gaussian_filter
 from emukit.test_functions import branin_function
 import numpy as np
 import GPy
@@ -60,5 +61,6 @@ class ExperimentalDesign():
             c = x[1]
             for idx, (temp, conc) in enumerate(zip(self.temps, self.concs)):
                 if t == temp and c == conc:
-                    outputarr.append(self.histograms[idx])
+                    hist = gaussian_filter(self.histograms[idx], sigma=0.8)
+                    outputarr.append(hist)
         return outputarr

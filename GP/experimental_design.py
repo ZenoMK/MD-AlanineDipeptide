@@ -1,6 +1,6 @@
 # this is a script to run one iteration of
 
-from emukit.core import ParameterSpace, ContinuousParameter
+from emukit.core import ParameterSpace, DiscreteParameter
 from emukit.experimental_design.acquisitions import ModelVariance
 from emukit.experimental_design import ExperimentalDesignLoop
 from emukit.model_wrappers import GPyModelWrapper
@@ -24,10 +24,8 @@ def expdesign(model):
     Output:
         a new point to sample
     """
-    params = ParameterSpace([ContinuousParameter('Temp', 280 , 370),
-                    ContinuousParameter('Conc', 0.05, 0.25),
-                    ContinuousParameter('phi', -180, 180),
-                    ContinuousParameter('psi', -180, 180)
+    params = ParameterSpace([DiscreteParameter('Temp', [280,290,300,310,320,330,340,350 370]),
+                    DiscreteParameter('Conc', [0.05, 0.10,0.15,0.20,0.25])
                              ])
 
     model_emukit = GPyModelWrapper(model)

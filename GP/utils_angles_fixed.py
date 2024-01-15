@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 import GPy
-COMPRESS_SIZE = 20  # number of bins, i.e. 36 because we want roughly ranges of 10 integer values for angles
+COMPRESS_SIZE = 360  # number of bins, i.e. 36 because we want roughly ranges of 10 integer values for angles
 # Function to load histograms and calculate mean and std
 def load_histograms_and_calculate_stats(directory):
     histograms = []
@@ -59,13 +59,10 @@ def prepare_2d_gp_data(histograms, temps, concs):
     X = []
     Y = []
     for idx, (temp, conc) in enumerate(zip(temps, concs)):
-        for i in range(COMPRESS_SIZE):
-            for j in range(COMPRESS_SIZE):
-                X.append([temp, conc])
-                Y.append(compressed_histograms[idx, i, j])
+        X.append([temp, conc])
+        Y.append(compressed_histograms[idx].reshape(-1))
 
-    return np.array(X), np.array(Y).reshape(-1, 1)
-
+    return np.array(X), np.array(Y)
 
 
 def plot_predicted_landscape_for_temp_conc(m, scaler, temp, conc):

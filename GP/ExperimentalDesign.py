@@ -15,6 +15,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from utils_angles_fixed import *
+
 from emukit.core.initial_designs.latin_design import LatinDesign
 import logging
 from main import *
@@ -22,13 +23,12 @@ from utils_angles_fixed import *
 
 class ExperimentalDesign():
     logging.basicConfig(level=logging.NOTSET)
-    def __init__(self,dir, max_iters):
+    def __init__(self,dir):
         self.dir = dir
         mean_histogram, std_histogram, temps, concs, histograms = load_histograms_and_calculate_stats(self.dir)
         self.temps = temps
         self.concs = concs
         self.histograms = histograms
-        self.max_iters = max_iters
 
         params = ParameterSpace([DiscreteParameter('Temp', [280,290,300,310,320,330,340,350, 370]),
                         DiscreteParameter('Conc', [0.05, 0.10,0.15,0.20,0.25])
@@ -39,7 +39,7 @@ class ExperimentalDesign():
         X,Y = prepare_2d_gp_data(self.histograms, pts[:,0], pts[:,1])
 
         Y = self.obtain_histogram_for_X(X)
-        kernel = GPy.kern.Matern32(input_dim=2, variance=1., lengthscale=1.)
+        kernel = GPy.kern.Matern32(input_dim=2, variance=1., lengthscale=1.)+GPy.kern.White(input_dim = 2, variance = 1)
         model = GPy.models.GPRegression(X, Y, kernel=kernel)
         model_emukit = GPyModelWrapper(model)
         model_variance = ModelVariance(model=model_emukit)
@@ -50,8 +50,8 @@ class ExperimentalDesign():
                                                 space=params,
                                                 acquisition=model_variance,
                                                 batch_size=1)
-    def run_loop(self):
-        self.expdesign_loop.run_loop(user_function=self.obtain_histogram_for_X, stopping_condition=self.max_iters)
+    def run_loop(self,iters):
+        self.expdesign_loop.run_loop(user_function=self.obtain_histogram_for_X, stopping_condition=iters)
 
 
     def obtain_histogram_for_X(self, X):
@@ -66,4 +66,4 @@ class ExperimentalDesign():
         return self.expdesign_loop.model
 
     def get_sampled_X(self):
-        return self.get_model().X()
+        return self.get_model().X

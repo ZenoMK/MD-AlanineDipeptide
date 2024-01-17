@@ -61,7 +61,6 @@ def generate_save_histograms():
             try:
                 df = pd.DataFrame(read_xvg(filename))
 
-                df = apply_offset(df)
                 hist = calculate_ramachandran_histogram(df)
 
                 # Save histogram data
@@ -69,3 +68,6 @@ def generate_save_histograms():
                 print(f"Saved histogram for {filename}")
             except FileNotFoundError:
                 print(f"File not found: {filename}")
+
+
+generate_save_histograms()

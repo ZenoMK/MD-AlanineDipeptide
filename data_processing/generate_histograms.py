@@ -60,14 +60,15 @@ def generate_save_histograms():
 
             try:
                 df = pd.DataFrame(read_xvg(filename))
-
-                hist = calculate_ramachandran_histogram(df)
+                phi = df[0]
+                psi = df[1]
+                df_new = pd.DataFrame({'phi': phi, 'psi': psi})
+                hist = calculate_ramachandran_histogram(df_new)
 
                 # Save histogram data
                 np.save(output_filename, hist)
                 print(f"Saved histogram for {filename}")
             except FileNotFoundError:
                 print(f"File not found: {filename}")
-
 
 generate_save_histograms()

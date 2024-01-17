@@ -24,6 +24,7 @@ test_hists = f"{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/da
 mean_histogram, std_histogram, temps, concs, histograms = load_histograms_and_calculate_stats(test_hists)
 X_test, Y_test = prepare_2d_gp_data(histograms, temps, concs)
 
+"""
 min_vals = Y_test.min(axis=1, keepdims=True)
 max_vals = Y_test.max(axis=1, keepdims=True)
 
@@ -31,7 +32,7 @@ max_vals = Y_test.max(axis=1, keepdims=True)
 normalized_array = (Y_test - min_vals) / (max_vals - min_vals) * 100
 Y_test = normalized_array
 
-
+"""
 
 # prepare training data
 mean_hist_low, std_hist_low, temps_low, concs_low, histograms_low = load_histograms_and_calculate_stats(low_dir)
@@ -75,7 +76,7 @@ mae_h = mean_absolute_error(Y_test, Y_pred_h)
 
 print(rmse_l, mae_l, rmse_h, mae_h)
 
-
+# --------- HIGH GP MODEL ----
 high_gp_model = GPy.models.GPRegression(X_h, Y_h, kernel)
 high_gp_model.Gaussian_noise.fix(0)
 
@@ -91,6 +92,23 @@ rmse_standard = mean_squared_error(Y_test_flat, Y_pred_standard_flat, squared=Fa
 mae_standard = mean_absolute_error(Y_test, Y_pred_standard)
 
 print(f"standard: {rmse_standard}, {mae_standard}")
+
+"""
+# --------- LOW GP MODEL ----
+low_gp_model = GPy.models.GPRegression(X_l, Y_l, kernel)
+low_gp_model.Gaussian_noise.fix(0)
+
+## Fit the GP model
+low_gp_model.optimize_restarts(5)
+
+## Compute mean predictions and associated variance
+
+Y_pred_standard, _  = high_gp_model.predict(X_test)
+Y_pred_standard_flat = Y_pred_standard.ravel()
+
+rmse_standard = mean_squared_error(Y_test_flat, Y_pred_standard_flat, squared=False)
+mae_standard = mean_absolute_error(Y_test, Y_pred_standard)
+"""
 
 print("done")
 

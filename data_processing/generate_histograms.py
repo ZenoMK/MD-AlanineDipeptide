@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
+import glob
 
 def read_xvg(fname):
     """Read columns of data from file fname
@@ -60,10 +61,8 @@ def generate_save_histograms():
 
             try:
                 df = pd.DataFrame(read_xvg(filename))
-                phi = df[0]
-                psi = df[1]
-                df_new = pd.DataFrame({'phi': phi, 'psi': psi})
-                hist = calculate_ramachandran_histogram(df_new)
+                df = apply_offset(df)
+                hist = calculate_ramachandran_histogram(df)
 
                 # Save histogram data
                 np.save(output_filename, hist)
@@ -71,4 +70,44 @@ def generate_save_histograms():
             except FileNotFoundError:
                 print(f"File not found: {filename}")
 
-generate_save_histograms()
+
+
+def modify_files_multifidelity(file_pattern):
+    for file_path in glob.glob(file_pattern):
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
+
+        modified_lines = lines[0:250035]
+
+        with open(file_path, 'w') as file:
+            file.writelines(modified_lines)
+        print(f'Modified {file_path}')
+
+
+def generate_save_histograms_multifidelity():
+    # Loop through temperatures and concentrations
+    for temp in range(280, 361, 10):
+        for conc in range(5, 26, 5):
+            pwd = os.path.dirname(os.path.realpath(__file__))
+            filename = f"{pwd}/data_simulated_multifidelity/10ns_temp{temp}conc0{conc:02}.xvg"
+            output_filename = f"{pwd}/data_processed_multifidelity/histogram_temp{temp}_conc0{conc:02}.npy"
+
+            try:
+                df = pd.DataFrame(read_xvg(filename))
+                df = apply_offset(df)
+                hist = calculate_ramachandran_histogram(df)
+
+                # normalise histograms to [0, 100]
+                hist_only = hist["histogram"]
+                norm_hist = (hist_only-np.min(hist_only))/(np.max(hist_only)-np.min(hist_only)) * 100
+                hist["histogram"] = norm_hist
+
+                # Save histogram data
+                np.save(output_filename, hist)
+                print(f"Saved histogram for {filename}")
+            except FileNotFoundError:
+                print(f"File not found: {filename}")
+
+
+generate_save_histograms_multifidelity()
+

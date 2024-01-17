@@ -87,13 +87,13 @@ def main(kernel_author=None, kernel_number=None):
     kernel_number: add numbered kernels under your name as you experiment w different kernels
     """
 
-    hist_data_dir = "hist_new"
+    hist_data_dir = f"{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/data_processing/data_processed"
     # prepare training data
     mean_hist, std_hist, temps, concs, histograms = load_histograms_and_calculate_stats(hist_data_dir)
 
     X_train, Y_train = prepare_2d_gp_data(histograms, temps, concs)
 
-    hist_data_dir = 'hist/test_new'
+    hist_data_dir = f"{os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}/data_processing/new_data"
     # prepare training data
     mean_hist, std_hist, temps, concs, histograms = load_histograms_and_calculate_stats(hist_data_dir)
 

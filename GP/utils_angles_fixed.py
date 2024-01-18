@@ -61,8 +61,8 @@ def prepare_2d_gp_data(histograms, temps, concs):
     Y = []
     for idx, (temp, conc) in enumerate(zip(temps, concs)):
         X.append([temp, conc])
-        compressed_histograms[idx] = gaussian_filter(compressed_histograms[idx], sigma=0.8)
-        Y.append(compressed_histograms[idx].reshape(-1))
+        hist = gaussian_filter(compressed_histograms[idx], sigma=0.5)
+        Y.append(hist.reshape(-1))
 
     return np.array(X), np.array(Y)
 
